@@ -3,7 +3,6 @@
     <h1 class="tit">Create AIML Tools</h1>
     <p class="txt">docomoタグが付いた投稿をQiitaAPIv2を用いて取得し、最新の5件を表示。</p>
     <div class="tag_searcher">
-      <!-- イベント発火用インプットタグ -->
       <input type="text" v-model="tag" name="" value="">
       <input type="button" v-on:click="getUrl()" name="" value="search">
       <input type="button" v-on:click="postUrl()" name="" value="send">
@@ -51,6 +50,7 @@ export default {
         .get(`${this.url}`)
         .then(response => (this.posts = response.data))
     },
+    // WebAPIにpostしてデータを取得する
     postUrl () {
       this.url = `http://weather.livedoor.com/forecast/webservice/json/v1?city=400040`
       axios
