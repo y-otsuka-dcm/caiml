@@ -1,9 +1,6 @@
 <template>
   <div id="login-form">
     <router-view/>
-    <input v-model="email" placeholder="edit me">
-    <button v-on:click="createUser" class="btn btn-primary">POST</button>
-    <!-- <script src="bundle.js"></script> -->
   </div>
 </template>
 
