@@ -1,40 +1,37 @@
 <template>
-     <div class="rss">
+    <div class="rss" id="ras">
     <h1 class="tit">Create AIML Tools</h1>
-    <p class="txt">docomoタグが付いた投稿をQiitaAPIv2を用いて取得し、最新の5件を表示。</p>
-    <div class="tag_searcher">
-      <input type="text" v-model="tag" name="" value="">
-      <input type="button" v-on:click="getUrl()" name="" value="search">
-      <input type="button" v-on:click="postUrl()" name="" value="postapi">
-      <input type="button" v-on:click="createAIMLTEST()" name="" value="DLtest">
+    <p class="txt">GET/POST確認用</p>
+    <div class="getpost_test">
+      <b-button input type="button" size="lg" variant="outline-secondary" v-on:click="postUrl()" name="">PostAPI</b-button>
+      <b-button input type="button" size="lg" variant="outline-secondary" v-on:click="createAIMLTEST()" name="">DLTest</b-button>
     </div>
-    <div>
-      <p>method</p><input type="text" id="method_data" v-model="txt_header" name="" value=""><br>
-      <p>url</p><input type="text" id="url_data" v-model="txt_header" name="" value=""><br>
-      <p>header</p><input type="text" id="header_data" v-model="txt_header" name="" value=""><br>
-      <input type="button" v-on:click="createAIML()" name="" value="create">
+    <div id="app">
+  <form action="" @submit.prevent="validate">
+    <div class="form-group">
+      <label for="">method</label>
+      <input name="method" type="text" id="method_data" class="form-control" v-validate="'required'" />
+      <span class="text-danger">{{ errors.first('method') }}</span>
     </div>
-    <div class="qiita_wrap">
-      <!-- v-forで最新の5件を取得 -->
-      <div v-for='(post, index) in 5' :key='index' class="qiita">
-        <ul>
-          <li>
-            <a :href="posts[index].url" target="_blank">
-              <div class="qiita_content">
-                <figure><img :src="posts[index].user.profile_image_url" alt=""></figure>
-                <p class="user_name" v-if="posts[index].user.name">{{posts[index].user.name}}</p><p class="time"> posted at {{posts[index].updated_at.slice(0,-15)}}</p>
-              </div>
-              <p class="qiita_txt">{{posts[index].title.slice(0,48)}}<span v-if="posts[index].title.length > 48" >...</span></p>
-            </a>
-          </li>
-        </ul>
-      </div>
+    <div class="form-group">
+      <label for="">url</label>
+      <input name="url" type="text" id="url_data" class="form-control" v-validate="'required'" />
+      <span class="text-danger">{{ errors.first('url') }}</span>
     </div>
+    <div class="form-group">
+      <label for="">header</label>
+      <input name="header" type="text" id="header_data" class="form-control" v-validate="'required'" />
+      <span class="text-danger">{{ errors.first('header') }}</span>
+    </div>
+    <button type="submit" class="btn btn-primary" v-on:click="Validate()" name="">Create</button>
+  </form>
+</div>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+
 export default {
   data () {
     return {
@@ -44,19 +41,6 @@ export default {
     }
   },
   methods: {
-    getApi () {
-      // axiosでqiitaから記事の情報を取得してpostsに代入
-      axios
-        .get(`https://qiita.com/api/v2/tags/docomo/items`)
-        .then(response => (this.posts = response.data))
-    },
-    // タグ検索メソッド
-    getUrl () {
-      this.url = `https://qiita.com/api/v2/tags/${this.tag}/items`
-      axios
-        .get(`${this.url}`)
-        .then(response => (this.posts = response.data))
-    },
     // WebAPIにpostしてデータを取得する
     postUrl () {
       this.url = `https://35peq81ai3.execute-api.ap-northeast-1.amazonaws.com/prod/nodeCGSsample`
@@ -79,16 +63,24 @@ export default {
         link.revokeObjectURL()
       })
     },
+    Validate () {
+      this.$validator.validateAll()
+        .then((result) => {
+          if (result) {
+            this.createAIML()
+          }
+        })
+    },
     createAIML () {
-      let method = document.getElementById('method_data').value
-      let url = document.getElementById('url_data').value
-      let header = document.getElementById('header_data').value
-      let redive1 = '{\n' + '"method": ' + method + ',\n'
-      let redive2 = '"url": ' + url + ',\n'
-      let redive3 = '"header": ' + header + ',\n' + '}'
-      const result = redive1 + redive2 + redive3
-      const downloadFileName = 'downloadtest.xml'
-      const blob = new Blob([result], { 'type': 'text/xml' })
+      const method = document.getElementById('method_data').value
+      const url = document.getElementById('url_data').value
+      const header = document.getElementById('header_data').value
+      const redive = '        {\n' + '          "method": "' + method + '",\n' + '          "url": "' + url + '",\n' + '          "header: {' + header + '}\n' + '        }'
+      const tag1 = '<category>\n' + '  <pattern>' + '汎用CGS' + '</pattern>\n' + '  <template>\n' + '    <!--' + ' 汎用CGS「multicgs」を実行します。 ' + '-->\n' + '    <ext name="multicgs">\n' + '      <!-- リクエストパラメータを設定します。 -->\n' + '      <arg name="request">\n'
+      const tag2 = '\n      </arg>\n' + '    </ext>\n' + '    <!-- 実行結果を取得します。 -->\n' + '    <think><predstore>location.setJson(<get name="_ext_multicgs_body"/>)</predstore></think>\n' + '    <predstore>location.stateName</predstore>\n' + '  </template>\n' + '</category>'
+      const sum = tag1 + redive + tag2
+      const downloadFileName = 'aimldata.xml'
+      const blob = new Blob([sum], { 'type': 'text/xml' })
       if (window.navigator.msSaveBlob) {
         // IE, Edge
         window.navigator.msSaveOrOpenBlob(blob, downloadFileName)
@@ -105,7 +97,7 @@ export default {
   },
   // ページが読み込まれた際に実行したい{処理}
   created () {
-    this.getApi()
+    this.postUrl()
   }
 }
 </script>

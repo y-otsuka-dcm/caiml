@@ -46,6 +46,9 @@ npm i bootstrap-vue
 
 #install jquery
 npm install --save jquery
+
+#install jquery
+npm i vee-validate --save
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
